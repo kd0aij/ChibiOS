@@ -217,7 +217,7 @@ typedef struct {
  *
  * @init
  */
-#define palInit(config) pal_lld_init(config)
+#define palInit() pal_lld_init()
 
 /**
  * @brief   Reads the physical I/O port states.

@@ -73,43 +73,12 @@
  *
  * @notapi
  */
-void _pal_lld_init(const PALConfig *config) {
+void _pal_lld_init() {
 
   /*
    * Enables the GPIO related clocks.
    */
   rccEnableAPB2(APB2_EN_MASK, FALSE);
-
-  /*
-   * Initial GPIO setup.
-   */
-  GPIOA->ODR = config->PAData.odr;
-  GPIOA->CRH = config->PAData.crh;
-  GPIOA->CRL = config->PAData.crl;
-  GPIOB->ODR = config->PBData.odr;
-  GPIOB->CRH = config->PBData.crh;
-  GPIOB->CRL = config->PBData.crl;
-  GPIOC->ODR = config->PCData.odr;
-  GPIOC->CRH = config->PCData.crh;
-  GPIOC->CRL = config->PCData.crl;
-  GPIOD->ODR = config->PDData.odr;
-  GPIOD->CRH = config->PDData.crh;
-  GPIOD->CRL = config->PDData.crl;
-#if STM32_HAS_GPIOE || defined(__DOXYGEN__)
-  GPIOE->ODR = config->PEData.odr;
-  GPIOE->CRH = config->PEData.crh;
-  GPIOE->CRL = config->PEData.crl;
-#if STM32_HAS_GPIOF || defined(__DOXYGEN__)
-  GPIOF->ODR = config->PFData.odr;
-  GPIOF->CRH = config->PFData.crh;
-  GPIOF->CRL = config->PFData.crl;
-#if STM32_HAS_GPIOG || defined(__DOXYGEN__)
-  GPIOG->ODR = config->PGData.odr;
-  GPIOG->CRH = config->PGData.crh;
-  GPIOG->CRL = config->PGData.crl;
-#endif
-#endif
-#endif
 }
 
 /**

@@ -356,12 +356,10 @@ typedef GPIO_TypeDef * ioportid_t;
  */
 #define pal_lld_writepad(port, pad, bit) pal_lld_writegroup(port, 1, pad, bit)
 
-extern const PALConfig pal_default_config;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-  void _pal_lld_init(const PALConfig *config);
+  void _pal_lld_init(void);
   void _pal_lld_setgroupmode(ioportid_t port,
                              ioportmask_t mask,
                              iomode_t mode);
