@@ -17,6 +17,31 @@
 #include "ch.h"
 #include "hal.h"
 
+#define MRO
+#if defined(MAPLE)
+#define TXPORT GPIOA
+#define TXPIN 12
+#define LEDPORT GPIOB
+#define LEDPIN 1
+
+#elif defined(MRO)
+#define TXPORT GPIOA
+#define TXPIN 12
+#define LEDPORT GPIOA
+#define LEDPIN 4
+#endif
+
+#define CONFIG_LED  palSetPadMode(LEDPORT, LEDPIN, PAL_MODE_OUTPUT_PUSHPULL)
+#define LED_ON palSetPad(LEDPORT, LEDPIN)
+#define LED_OFF palClearPad(LEDPORT, LEDPIN)
+#define LED_TOGGLE palTogglePad(LEDPORT, LEDPIN)
+
+#define CONFIG_TX  palSetPadMode(TXPORT, TXPIN, PAL_MODE_OUTPUT_PUSHPULL)
+#define TX_HIGH palSetPad(TXPORT, TXPIN)
+#define TX_LOW palClearPad(TXPORT, TXPIN)
+#define TX_TOGGLE palTogglePad(TXPORT, TXPIN)
+
+
 /*
  * Internal loopback mode, 500KBaud, automatic wakeup, automatic recover
  * from abort mode.
@@ -24,10 +49,12 @@
  */
 static const CANConfig cancfg = {
   CAN_MCR_ABOM | CAN_MCR_AWUM | CAN_MCR_TXFP,
-  CAN_BTR_LBKM | CAN_BTR_SJW(0) | CAN_BTR_TS2(1) |
+    CAN_BTR_LBKM | CAN_BTR_SJW(0) | CAN_BTR_TS2(1) |
+//    CAN_BTR_SJW(0) | CAN_BTR_TS2(1) |
   CAN_BTR_TS1(8) | CAN_BTR_BRP(6)
 };
 
+#if 1
 /*
  * Receiver thread.
  */
@@ -44,7 +71,7 @@ static THD_FUNCTION(can_rx, p) {
       continue;
     while (canReceive(&CAND1, CAN_ANY_MAILBOX, &rxmsg, TIME_IMMEDIATE) == MSG_OK) {
       /* Process message.*/
-      palTogglePad(IOPORT3, GPIOC_LED);
+      LED_OFF;
     }
   }
   chEvtUnregister(&CAND1.rxfull_event, &el);
@@ -66,11 +93,20 @@ static THD_FUNCTION(can_tx, p) {
   txmsg.data32[0] = 0x55AA55AA;
   txmsg.data32[1] = 0x00FF00FF;
 
+//  AFIO->MAPR &= ~AFIO_MAPR_CAN_REMAP_REMAP3_Msk;    // clear the CAN remap bits
+//  rccEnableCAN1(1);
+//  rccEnableAPB2((1<<2), 1);
+  // CAN RX
+  palSetPadMode(GPIOA, 11, PAL_MODE_INPUT);
+
   while (true) {
+    LED_ON;
+    CONFIG_TX;
     canTransmit(&CAND1, CAN_ANY_MAILBOX, &txmsg, MS2ST(100));
     chThdSleepMilliseconds(500);
   }
 }
+#endif
 
 /*
  * Application entry point.
@@ -86,6 +122,9 @@ int main(void) {
    */
   halInit();
   chSysInit();
+
+  CONFIG_LED;
+  CONFIG_TX;
 
   /*
    * Activates the CAN driver 1.
@@ -103,6 +142,8 @@ int main(void) {
    * Normal main() thread activity, in this demo it does nothing.
    */
   while (true) {
+//    TX_TOGGLE;
+    LED_TOGGLE;
     chThdSleepMilliseconds(500);
   }
   return 0;
