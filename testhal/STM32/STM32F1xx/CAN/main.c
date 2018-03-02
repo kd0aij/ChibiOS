@@ -17,7 +17,7 @@
 #include "ch.h"
 #include "hal.h"
 
-#define MRO
+#define MAPLE
 #if defined(MAPLE)
 #define TXPORT GPIOA
 #define TXPIN 12
