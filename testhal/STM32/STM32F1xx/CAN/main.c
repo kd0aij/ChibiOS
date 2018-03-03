@@ -20,12 +20,14 @@
 #define MAPLE
 #if defined(MAPLE)
 #define TXPORT GPIOA
+#define RXPIN 11
 #define TXPIN 12
 #define LEDPORT GPIOB
 #define LEDPIN 1
 
 #elif defined(MRO)
 #define TXPORT GPIOA
+#define RXPIN 11
 #define TXPIN 12
 #define LEDPORT GPIOA
 #define LEDPIN 4
@@ -36,10 +38,14 @@
 #define LED_OFF palClearPad(LEDPORT, LEDPIN)
 #define LED_TOGGLE palTogglePad(LEDPORT, LEDPIN)
 
-#define CONFIG_TX  palSetPadMode(TXPORT, TXPIN, PAL_MODE_OUTPUT_PUSHPULL)
+#define CONFIG_RX  palSetPadMode(TXPORT, RXPIN, 0x4)
+#define CONFIG_TX  palSetPadMode(TXPORT, TXPIN, 0xB)
 #define TX_HIGH palSetPad(TXPORT, TXPIN)
 #define TX_LOW palClearPad(TXPORT, TXPIN)
 #define TX_TOGGLE palTogglePad(TXPORT, TXPIN)
+//  AFIO->MAPR &= ~AFIO_MAPR_CAN_REMAP_REMAP3_Msk;    // clear the CAN remap bits
+//  rccEnableCAN1(1);
+//  rccEnableAPB2((1<<2), 1);
 
 
 /*
@@ -93,15 +99,8 @@ static THD_FUNCTION(can_tx, p) {
   txmsg.data32[0] = 0x55AA55AA;
   txmsg.data32[1] = 0x00FF00FF;
 
-//  AFIO->MAPR &= ~AFIO_MAPR_CAN_REMAP_REMAP3_Msk;    // clear the CAN remap bits
-//  rccEnableCAN1(1);
-//  rccEnableAPB2((1<<2), 1);
-  // CAN RX
-  palSetPadMode(GPIOA, 11, PAL_MODE_INPUT);
-
   while (true) {
     LED_ON;
-    CONFIG_TX;
     canTransmit(&CAND1, CAN_ANY_MAILBOX, &txmsg, MS2ST(100));
     chThdSleepMilliseconds(500);
   }
@@ -124,7 +123,9 @@ int main(void) {
   chSysInit();
 
   CONFIG_LED;
-  CONFIG_TX;
+//  CONFIG_RX;
+//  CONFIG_TX;
+  palSetPadMode(GPIOA, 12, 0x3);
 
   /*
    * Activates the CAN driver 1.
